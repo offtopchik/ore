@@ -51,6 +51,12 @@ install_ore_node() {
 # Функция запуска ноды ORE
 start_ore_node() {
   echo "Запуск ноды ORE..."
+  if [ ! -f "/root/.config/solana/id.json" ]; then
+    echo "Ошибка: Ключевой файл id.json не найден. Создайте его с помощью команды:"
+    echo "  solana-keygen new --outfile /root/.config/solana/id.json"
+    return
+  fi
+
   if [ -f "/root/.cargo/bin/ore" ]; then
     while true; do
       read -p "Введите адрес MINT (MINT_ADDRESS): " MINT_ADDRESS
@@ -100,3 +106,4 @@ while true; do
       ;;
   esac
 done
+
