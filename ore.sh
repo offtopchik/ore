@@ -52,12 +52,14 @@ install_ore_node() {
 start_ore_node() {
   echo "Запуск ноды ORE..."
   if [ -f "/root/.cargo/bin/ore" ]; then
-    read -p "Введите адрес MINT (MINT_ADDRESS): " MINT_ADDRESS
-    if [ -z "$MINT_ADDRESS" ]; then
-      echo "Ошибка: MINT_ADDRESS не может быть пустым."
-    else
-      "/root/.cargo/bin/ore" stake "$MINT_ADDRESS" || echo "Ошибка: Убедитесь, что нода настроена корректно."
-    fi
+    while true; do
+      read -p "Введите адрес MINT (MINT_ADDRESS): " MINT_ADDRESS
+      if [ -z "$MINT_ADDRESS" ]; then
+        echo "Ошибка: MINT_ADDRESS не может быть пустым. Пожалуйста, введите корректный адрес."
+      else
+        "/root/.cargo/bin/ore" stake "$MINT_ADDRESS" && break || echo "Ошибка: Убедитесь, что адрес корректен и нода настроена. Попробуйте снова."
+      fi
+    done
   else
     echo "Ошибка: Команда ore не найдена. Проверьте установку."
   fi
