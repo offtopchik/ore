@@ -12,8 +12,28 @@ NC='\033[0m' # Нет цвета
 # ====================
 # Глобальные переменные
 # ====================
-ORE_NODE_DIR="$HOME/ore-node" # Укажите полный путь к ore-node
 ORE_CLI_DIR="$HOME/ore-cli"   # Укажите полный путь к ore-cli
+
+# ==========================
+# Проверка и установка обновлений и зависимостей
+# ==========================
+update_and_install_dependencies() {
+  echo -e "\n${CYAN}==============================${NC}"
+  echo -e "${GREEN}Обновление системы и установка необходимых программ...${NC}"
+  echo -e "${CYAN}==============================${NC}"
+
+  sudo apt update && sudo apt upgrade -y || {
+    echo -e "${RED}Ошибка обновления системы.${NC}"
+    exit 1
+  }
+
+  sudo apt install -y git build-essential curl pkg-config libssl-dev || {
+    echo -e "${RED}Ошибка установки необходимых пакетов.${NC}"
+    exit 1
+  }
+
+  echo -e "${GREEN}Система обновлена и зависимости установлены.${NC}"
+}
 
 # ==========================
 # Проверка и установка Rust
@@ -32,75 +52,15 @@ check_and_install_rust() {
 }
 
 # ==========================
-# Функция для установки ноды ORE
-# ==========================
-install_ore_node() {
-  echo -e "\n${CYAN}==============================${NC}"
-  echo -e "${GREEN}1. Установка ноды ORE...${NC}"
-  echo -e "${CYAN}==============================${NC}"
-
-  sudo apt update && sudo apt upgrade -y && sudo apt install -y git build-essential curl || {
-    echo -e "${RED}Ошибка установки зависимостей.${NC}"
-    exit 1
-  }
-
-  check_and_install_rust
-
-  if [ ! -d "$ORE_NODE_DIR" ]; then
-    git clone https://github.com/regolith-labs/ore.git "$ORE_NODE_DIR" || {
-      echo -e "${RED}Ошибка клонирования репозитория ноды.${NC}"
-      exit 1
-    }
-  else
-    echo -e "${YELLOW}Репозиторий ноды уже клонирован.${NC}"
-  fi
-
-  cd "$ORE_NODE_DIR" || {
-    echo -e "${RED}Ошибка перехода в директорию ноды.${NC}"
-    exit 1
-  }
-
-  cargo build --release || {
-    echo -e "${RED}Ошибка сборки ноды.${NC}"
-    exit 1
-  }
-
-  echo -e "${GREEN}Нода ORE успешно установлена.${NC}"
-}
-
-# ==========================
-# Функция для запуска ноды ORE
-# ==========================
-start_ore_node() {
-  if [ ! -d "$ORE_NODE_DIR" ]; then
-    echo -e "${YELLOW}Нода ORE не найдена. Выполняется установка...${NC}"
-    install_ore_node
-  fi
-
-  echo -e "\n${CYAN}==============================${NC}"
-  echo -e "${GREEN}Запуск ноды ORE...${NC}"
-  echo -e "${CYAN}==============================${NC}"
-
-  cd "$ORE_NODE_DIR" || {
-    echo -e "${RED}Ошибка перехода в директорию ноды.${NC}"
-    exit 1
-  }
-
-  cargo run --release || {
-    echo -e "${RED}Ошибка запуска ноды.${NC}"
-    exit 1
-  }
-}
-
-# ==========================
 # Функция для установки ore-cli
 # ==========================
 install_ore_cli() {
-  echo -e "\n${CYAN}==============================${NC}"
-  echo -e "${GREEN}1. Установка ore-cli...${NC}"
-  echo -e "${CYAN}==============================${NC}"
-
+  update_and_install_dependencies
   check_and_install_rust
+
+  echo -e "\n${CYAN}==============================${NC}"
+  echo -e "${GREEN}Установка ore-cli...${NC}"
+  echo -e "${CYAN}==============================${NC}"
 
   if [ ! -d "$ORE_CLI_DIR" ]; then
     git clone https://github.com/regolith-labs/ore-cli.git "$ORE_CLI_DIR" || {
@@ -176,32 +136,24 @@ while true; do
   echo -e "\n${CYAN}==============================${NC}"
   echo -e "${GREEN}Выберите действие:${NC}"
   echo -e "${CYAN}==============================${NC}"
-  echo "1) Установить ноду ORE"
-  echo "2) Запустить ноду ORE"
-  echo "3) Установить ore-cli"
-  echo "4) Настроить кошелек"
-  echo "5) Запустить ore-cli"
-  echo "6) Выход"
+  echo "1) Установить ore-cli"
+  echo "2) Настроить кошелек"
+  echo "3) Запустить ore-cli"
+  echo "4) Выход"
 
   read -rp "Введите номер действия: " choice
 
   case $choice in
     1)
-      install_ore_node
-      ;;
-    2)
-      start_ore_node
-      ;;
-    3)
       install_ore_cli
       ;;
-    4)
+    2)
       setup_wallet
       ;;
-    5)
+    3)
       start_ore_cli
       ;;
-    6)
+    4)
       echo -e "${GREEN}Выход из программы.${NC}"
       exit 0
       ;;
@@ -210,3 +162,4 @@ while true; do
       ;;
   esac
 done
+
