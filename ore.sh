@@ -13,8 +13,6 @@ NC='\033[0m' # Нет цвета
 # Глобальные переменные
 # ====================
 ORE_CLI_DIR="$HOME/ore-cli"   # Укажите полный путь к ore-cli
-GENERATED_WALLET="" # Переменная для хранения сгенерированного кошелька
-PRIVATE_KEY="" # Переменная для хранения приватного ключа
 NODE_PID_FILE="$HOME/ore_node.pid" # Файл для хранения PID запущенной ноды
 ORE_EXECUTABLE="" # Переменная для хранения пути к исполняемому файлу
 
@@ -101,51 +99,6 @@ install_ore_cli() {
 
   find_executable
   echo -e "${GREEN}ore-cli успешно установлен.${NC}"
-
-  # Автоматическая генерация кошелька после установки ore-cli
-  generate_wallet
-}
-
-# ==========================
-# Функция для генерации кошелька
-# ==========================
-generate_wallet() {
-  echo -e "\n${CYAN}==============================${NC}"
-  echo -e "${GREEN}Генерация нового кошелька...${NC}"
-  echo -e "${CYAN}==============================${NC}"
-
-  find_executable
-
-  WALLET_OUTPUT=$("$ORE_EXECUTABLE" wallet generate 2>&1)
-  if [ $? -ne 0 ]; then
-    echo -e "${RED}Ошибка генерации кошелька. Вывод ошибки:${NC}"
-    echo -e "$WALLET_OUTPUT"
-    exit 1
-  fi
-
-  GENERATED_WALLET=$(echo "$WALLET_OUTPUT" | grep 'Address:' | awk '{print $2}')
-  PRIVATE_KEY=$(echo "$WALLET_OUTPUT" | grep 'Private Key:' | awk '{print $3}')
-
-  if [ -z "$GENERATED_WALLET" ] || [ -z "$PRIVATE_KEY" ]; then
-    echo -e "${RED}Ошибка: Кошелек или приватный ключ не были сгенерированы.${NC}"
-    exit 1
-  fi
-
-  echo -e "${GREEN}Кошелек успешно сгенерирован:${NC}"
-  echo -e "${CYAN}Адрес: ${GENERATED_WALLET}${NC}"
-  echo -e "${CYAN}Приватный ключ: ${PRIVATE_KEY}${NC}"
-}
-
-# ==========================
-# Функция для показа сгенерированного кошелька
-# ==========================
-show_wallet() {
-  if [ -z "$GENERATED_WALLET" ] || [ -z "$PRIVATE_KEY" ]; then
-    echo -e "${RED}Кошелек еще не был сгенерирован. Сначала установите ore-cli.${NC}"
-  else
-    echo -e "${CYAN}Адрес кошелька: ${GENERATED_WALLET}${NC}"
-    echo -e "${CYAN}Приватный ключ: ${PRIVATE_KEY}${NC}"
-  fi
 }
 
 # ==========================
@@ -155,10 +108,41 @@ start_ore_cli() {
   find_executable
 
   echo -e "\n${CYAN}==============================${NC}"
-  echo -e "${GREEN}Запуск ore-cli...${NC}"
+  echo -e "${GREEN}Выберите команду для выполнения:${NC}"
   echo -e "${CYAN}==============================${NC}"
+  echo "1) balance - Узнать баланс"
+  echo "2) benchmark - Тест производительности"
+  echo "3) mine - Начать майнинг"
+  echo "4) rewards - Посмотреть награды"
+  echo "5) transfer - Отправить ORE"
+  echo "6) custom - Ввести свою команду"
 
-  read -rp "Введите команду для ore-cli: " ore_command
+  read -rp "Введите номер команды: " command_choice
+
+  case $command_choice in
+    1)
+      ore_command="balance"
+      ;;
+    2)
+      ore_command="benchmark"
+      ;;
+    3)
+      ore_command="mine"
+      ;;
+    4)
+      ore_command="rewards"
+      ;;
+    5)
+      ore_command="transfer"
+      ;;
+    6)
+      read -rp "Введите свою команду: " ore_command
+      ;;
+    *)
+      echo -e "${RED}Неверный выбор. Возврат в меню.${NC}"
+      return
+      ;;
+  esac
 
   "$ORE_EXECUTABLE" $ore_command || {
     echo -e "${RED}Ошибка выполнения команды: $ore_command${NC}"
@@ -192,10 +176,9 @@ while true; do
   echo -e "${GREEN}Выберите действие:${NC}"
   echo -e "${CYAN}==============================${NC}"
   echo "1) Установка ноды ORE"
-  echo "2) Показать сгенерированный кошелек"
-  echo "3) Запустить ore-cli"
-  echo "4) Остановить ноду"
-  echo "5) Выход"
+  echo "2) Запустить ore-cli"
+  echo "3) Остановить ноду"
+  echo "4) Выход"
 
   read -rp "Введите номер действия: " choice
 
@@ -204,15 +187,12 @@ while true; do
       install_ore_cli
       ;;
     2)
-      show_wallet
-      ;;
-    3)
       start_ore_cli
       ;;
-    4)
+    3)
       stop_node
       ;;
-    5)
+    4)
       echo -e "${GREEN}Выход из программы.${NC}"
       exit 0
       ;;
@@ -221,4 +201,3 @@ while true; do
       ;;
   esac
 done
-
