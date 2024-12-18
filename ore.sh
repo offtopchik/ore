@@ -158,8 +158,10 @@ start_ore_cli() {
   echo -e "${GREEN}Запуск ore-cli...${NC}"
   echo -e "${CYAN}==============================${NC}"
 
-  "$ORE_EXECUTABLE" || {
-    echo -e "${RED}Ошибка запуска ore-cli.${NC}"
+  read -rp "Введите команду для ore-cli: " ore_command
+
+  "$ORE_EXECUTABLE" $ore_command || {
+    echo -e "${RED}Ошибка выполнения команды: $ore_command${NC}"
     exit 1
   }
 }
