@@ -48,8 +48,8 @@ fi
 # Установка Solana CLI
 success_message "Устанавливаем Solana CLI..."
 success_message "Переходим на использование нового метода установки..."
-LATEST_SOLANA_VERSION="v1.16.10"  # Укажите здесь необходимую версию
-sh -c "$(curl -sSfL https://release.anza.xyz/solana-release/${LATEST_SOLANA_VERSION}/install)"
+LATEST_SOLANA_CHANNEL="stable"  # Укажите необходимый канал: stable, beta, edge
+sh -c "$(curl -sSfL https://release.anza.xyz/${LATEST_SOLANA_CHANNEL}/install)"
 
 # Проверка Solana CLI
 if command -v solana &> /dev/null; then
