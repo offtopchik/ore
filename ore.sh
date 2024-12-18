@@ -16,6 +16,7 @@ ORE_CLI_DIR="$HOME/ore-cli"   # Укажите полный путь к ore-cli
 GENERATED_WALLET="" # Переменная для хранения сгенерированного кошелька
 PRIVATE_KEY="" # Переменная для хранения приватного ключа
 NODE_PID_FILE="$HOME/ore_node.pid" # Файл для хранения PID запущенной ноды
+ORE_EXECUTABLE="" # Переменная для хранения пути к исполняемому файлу
 
 # ==========================
 # Проверка и установка обновлений и зависимостей
@@ -55,6 +56,20 @@ check_and_install_rust() {
 }
 
 # ==========================
+# Поиск исполняемого файла ore-cli
+# ==========================
+find_executable() {
+  if [ -x "$ORE_CLI_DIR/target/release/ore" ]; then
+    ORE_EXECUTABLE="$ORE_CLI_DIR/target/release/ore"
+  elif [ -x "$ORE_CLI_DIR/target/release/ore-cli" ]; then
+    ORE_EXECUTABLE="$ORE_CLI_DIR/target/release/ore-cli"
+  else
+    echo -e "${RED}Исполняемый файл ore или ore-cli не найден. Попробуйте собрать проект снова: cargo build --release.${NC}"
+    exit 1
+  fi
+}
+
+# ==========================
 # Функция для установки ore-cli
 # ==========================
 install_ore_cli() {
@@ -84,6 +99,7 @@ install_ore_cli() {
     exit 1
   }
 
+  find_executable
   echo -e "${GREEN}ore-cli успешно установлен.${NC}"
 
   # Автоматическая генерация кошелька после установки ore-cli
@@ -98,13 +114,22 @@ generate_wallet() {
   echo -e "${GREEN}Генерация нового кошелька...${NC}"
   echo -e "${CYAN}==============================${NC}"
 
-  WALLET_OUTPUT=$("$ORE_CLI_DIR/target/release/ore-cli" wallet generate 2>&1) || {
-    echo -e "${RED}Ошибка генерации кошелька.${NC}"
+  find_executable
+
+  WALLET_OUTPUT=$("$ORE_EXECUTABLE" wallet generate 2>&1)
+  if [ $? -ne 0 ]; then
+    echo -e "${RED}Ошибка генерации кошелька. Вывод ошибки:${NC}"
+    echo -e "$WALLET_OUTPUT"
     exit 1
-  }
+  fi
 
   GENERATED_WALLET=$(echo "$WALLET_OUTPUT" | grep 'Address:' | awk '{print $2}')
   PRIVATE_KEY=$(echo "$WALLET_OUTPUT" | grep 'Private Key:' | awk '{print $3}')
+
+  if [ -z "$GENERATED_WALLET" ] || [ -z "$PRIVATE_KEY" ]; then
+    echo -e "${RED}Ошибка: Кошелек или приватный ключ не были сгенерированы.${NC}"
+    exit 1
+  fi
 
   echo -e "${GREEN}Кошелек успешно сгенерирован:${NC}"
   echo -e "${CYAN}Адрес: ${GENERATED_WALLET}${NC}"
@@ -127,16 +152,13 @@ show_wallet() {
 # Функция для запуска ore-cli
 # ==========================
 start_ore_cli() {
-  if [ ! -d "$ORE_CLI_DIR" ]; then
-    echo -e "${YELLOW}ore-cli не найден. Выполняется установка...${NC}"
-    install_ore_cli
-  fi
+  find_executable
 
   echo -e "\n${CYAN}==============================${NC}"
   echo -e "${GREEN}Запуск ore-cli...${NC}"
   echo -e "${CYAN}==============================${NC}"
 
-  "$ORE_CLI_DIR/target/release/ore-cli" || {
+  "$ORE_EXECUTABLE" || {
     echo -e "${RED}Ошибка запуска ore-cli.${NC}"
     exit 1
   }
@@ -197,3 +219,4 @@ while true; do
       ;;
   esac
 done
+
