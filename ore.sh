@@ -5,8 +5,8 @@ GREEN='\033[0;32m'
 RED='\033[0;31m'
 NC='\033[0m' # Нет цвета
 
-# Функция для обновления системы и установки зависимостей проекта
-update_and_install_dependencies() {
+# Функция для обновления системы, установки зависимостей проекта и клонирования репозитория
+update_install_and_clone() {
   echo -e "${GREEN}Обновление системы и установка зависимостей...${NC}"
   sudo apt update && sudo apt upgrade -y || { echo -e "${RED}Ошибка обновления системы.${NC}"; exit 1; }
 
@@ -19,6 +19,16 @@ update_and_install_dependencies() {
   echo -e "${GREEN}Установка Rust...${NC}"
   curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y || { echo -e "${RED}Ошибка установки Rust.${NC}"; exit 1; }
   source "$HOME/.cargo/env"
+
+  echo -e "${GREEN}Клонирование репозитория...${NC}"
+  if [ ! -d "ore" ]; then
+    git clone https://github.com/regolith-labs/ore.git || { echo -e "${RED}Ошибка при клонировании репозитория.${NC}"; exit 1; }
+  else
+    echo -e "${GREEN}Репозиторий уже клонирован.${NC}"
+  fi
+
+  echo -e "${GREEN}Содержимое репозитория:${NC}"
+  ls -la ore || { echo -e "${RED}Не удалось отобразить содержимое репозитория.${NC}"; exit 1; }
 
   echo -e "${GREEN}Установка зависимостей проекта...${NC}"
   if [ -d "ore" ]; then
@@ -35,16 +45,6 @@ update_and_install_dependencies() {
     echo -e "${RED}Директория ore не найдена. Сначала клонируйте репозиторий.${NC}"
     exit 1
   fi
-
-  echo -e "${GREEN}Система обновлена и зависимости установлены.${NC}"
-}
-
-# Функция для клонирования репозитория
-clone_repository() {
-  echo -e "${GREEN}Клонирование репозитория...${NC}"
-  git clone https://github.com/regolith-labs/ore.git || { echo -e "${RED}Ошибка при клонировании репозитория.${NC}"; exit 1; }
-  echo -e "${GREEN}Содержимое репозитория:${NC}"
-  ls -la ore || { echo -e "${RED}Не удалось отобразить содержимое репозитория.${NC}"; exit 1; }
 }
 
 # Функция для настройки окружения
@@ -96,36 +96,28 @@ start_project() {
 # Главное меню
 while true; do
   echo -e "${GREEN}Выберите действие:${NC}"
-  echo "1) Обновить систему и установить зависимости проекта"
-  echo "2) Установить зависимости"
-  echo "3) Клонировать репозиторий"
-  echo "4) Настроить окружение"
-  echo "5) Настроить кошелек"
-  echo "6) Запустить проект"
-  echo "7) Выход"
+  echo "1) Обновить систему, установить зависимости, клонировать репозиторий и установить зависимости проекта"
+  echo "2) Настроить окружение"
+  echo "3) Настроить кошелек"
+  echo "4) Запустить проект"
+  echo "5) Выход"
 
   read -rp "Введите номер действия: " choice
 
   case $choice in
     1)
-      update_and_install_dependencies
+      update_install_and_clone
       ;;
     2)
-      install_dependencies
-      ;;
-    3)
-      clone_repository
-      ;;
-    4)
       setup_environment
       ;;
-    5)
+    3)
       setup_wallet
       ;;
-    6)
+    4)
       start_project
       ;;
-    7)
+    5)
       echo -e "${GREEN}Выход из программы.${NC}"
       exit 0
       ;;
