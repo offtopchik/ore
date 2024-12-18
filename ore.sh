@@ -60,7 +60,10 @@ install_ore_node() {
 install_solana_cli() {
   echo "Устанавливается Solana CLI..."
   VERSION="v1.15.2"
-  curl -sSfL https://release.solana.com/$VERSION/solana-install-init-x86_64-unknown-linux-gnu | sh -s -- -y
+  TMP_DIR=$(mktemp -d)
+  curl -sSfL "https://release.solana.com/${VERSION}/solana-install-init-x86_64-unknown-linux-gnu" -o "${TMP_DIR}/solana-installer"
+  chmod +x "${TMP_DIR}/solana-installer"
+  "${TMP_DIR}/solana-installer" -y
   export PATH="$HOME/.local/share/solana/install/active_release/bin:$PATH"
   if command -v solana &> /dev/null; then
     echo "Solana CLI успешно установлена."
