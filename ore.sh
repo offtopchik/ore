@@ -54,6 +54,21 @@ setup_environment() {
   fi
 }
 
+# Функция для настройки кошелька
+setup_wallet() {
+  echo -e "${GREEN}Настройка кошелька...${NC}"
+  read -rp "Введите адрес вашего кошелька: " WALLET_ADDRESS
+  read -rp "Введите ваш приватный ключ: " PRIVATE_KEY
+
+  if [ -f .env ]; then
+    echo "WALLET_ADDRESS=$WALLET_ADDRESS" >> .env
+    echo "PRIVATE_KEY=$PRIVATE_KEY" >> .env
+    echo -e "${GREEN}Кошелек успешно добавлен в файл .env.${NC}"
+  else
+    echo -e "${RED}Файл .env не найден. Убедитесь, что окружение настроено.${NC}"
+  fi
+}
+
 # Функция для запуска проекта
 start_project() {
   echo -e "${GREEN}Запуск проекта...${NC}"
@@ -68,8 +83,9 @@ while true; do
   echo "3) Клонировать репозиторий"
   echo "4) Установить зависимости проекта"
   echo "5) Настроить окружение"
-  echo "6) Запустить проект"
-  echo "7) Выход"
+  echo "6) Настроить кошелек"
+  echo "7) Запустить проект"
+  echo "8) Выход"
 
   read -rp "Введите номер действия: " choice
 
@@ -90,9 +106,12 @@ while true; do
       setup_environment
       ;;
     6)
-      start_project
+      setup_wallet
       ;;
     7)
+      start_project
+      ;;
+    8)
       echo -e "${GREEN}Выход из программы.${NC}"
       exit 0
       ;;
