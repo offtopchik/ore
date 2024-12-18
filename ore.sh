@@ -16,6 +16,22 @@ ORE_NODE_DIR="$HOME/ore-node" # Укажите полный путь к ore-node
 ORE_CLI_DIR="$HOME/ore-cli"   # Укажите полный путь к ore-cli
 
 # ==========================
+# Проверка и установка Rust
+# ==========================
+check_and_install_rust() {
+  if ! command -v cargo &> /dev/null; then
+    echo -e "${YELLOW}Rust не установлен. Выполняется установка...${NC}"
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y || {
+      echo -e "${RED}Ошибка установки Rust.${NC}"
+      exit 1
+    }
+    source "$HOME/.cargo/env"
+  else
+    echo -e "${GREEN}Rust уже установлен.${NC}"
+  fi
+}
+
+# ==========================
 # Функция для установки ноды ORE
 # ==========================
 install_ore_node() {
@@ -27,6 +43,8 @@ install_ore_node() {
     echo -e "${RED}Ошибка установки зависимостей.${NC}"
     exit 1
   }
+
+  check_and_install_rust
 
   if [ ! -d "$ORE_NODE_DIR" ]; then
     git clone https://github.com/regolith-labs/ore.git "$ORE_NODE_DIR" || {
@@ -81,6 +99,8 @@ install_ore_cli() {
   echo -e "\n${CYAN}==============================${NC}"
   echo -e "${GREEN}1. Установка ore-cli...${NC}"
   echo -e "${CYAN}==============================${NC}"
+
+  check_and_install_rust
 
   if [ ! -d "$ORE_CLI_DIR" ]; then
     git clone https://github.com/regolith-labs/ore-cli.git "$ORE_CLI_DIR" || {
