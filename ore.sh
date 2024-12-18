@@ -152,7 +152,9 @@ start_ore_cli() {
       ore_command="rewards"
       ;;
     5)
-      ore_command="transfer"
+      read -rp "Введите сумму для отправки: " amount
+      read -rp "Введите адрес получателя: " recipient
+      ore_command="transfer $amount $recipient --keypair $KEYPAIR_PATH"
       ;;
     6)
       read -rp "Введите свою команду: " ore_command
@@ -220,4 +222,3 @@ while true; do
       ;;
   esac
 done
-
