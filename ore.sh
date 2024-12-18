@@ -32,7 +32,7 @@ install_ore_node() {
   cd ore-cli
 
   # Обновление репозитория
-  git pull origin main
+  git pull origin master
 
   # Установка зависимостей через Cargo
   cargo install --path .
