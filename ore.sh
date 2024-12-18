@@ -15,6 +15,7 @@ NC='\033[0m' # Нет цвета
 ORE_CLI_DIR="$HOME/ore-cli"   # Укажите полный путь к ore-cli
 NODE_PID_FILE="$HOME/ore_node.pid" # Файл для хранения PID запущенной ноды
 ORE_EXECUTABLE="" # Переменная для хранения пути к исполняемому файлу
+KEYPAIR_PATH="$HOME/.config/solana/id.json" # Путь к ключевому файлу
 
 # ==========================
 # Проверка и установка обновлений и зависимостей
@@ -29,7 +30,7 @@ update_and_install_dependencies() {
     exit 1
   }
 
-  sudo apt install -y git build-essential curl pkg-config libssl-dev || {
+  sudo apt install -y git build-essential curl pkg-config libssl-dev solana-cli || {
     echo -e "${RED}Ошибка установки необходимых пакетов.${NC}"
     exit 1
   }
@@ -50,6 +51,23 @@ check_and_install_rust() {
     source "$HOME/.cargo/env"
   else
     echo -e "${GREEN}Rust уже установлен.${NC}"
+  fi
+}
+
+# ==========================
+# Проверка наличия ключевого файла
+# ==========================
+check_keypair() {
+  if [ ! -f "$KEYPAIR_PATH" ]; then
+    echo -e "${YELLOW}Ключевой файл не найден. Создание нового ключа...${NC}"
+    mkdir -p "$(dirname "$KEYPAIR_PATH")"
+    solana-keygen new --outfile "$KEYPAIR_PATH" || {
+      echo -e "${RED}Ошибка создания ключевого файла.${NC}"
+      exit 1
+    }
+    echo -e "${GREEN}Ключ успешно создан и сохранен по пути: $KEYPAIR_PATH${NC}"
+  else
+    echo -e "${GREEN}Ключевой файл найден: $KEYPAIR_PATH${NC}"
   fi
 }
 
@@ -106,6 +124,7 @@ install_ore_cli() {
 # ==========================
 start_ore_cli() {
   find_executable
+  check_keypair
 
   echo -e "\n${CYAN}==============================${NC}"
   echo -e "${GREEN}Выберите команду для выполнения:${NC}"
@@ -127,7 +146,7 @@ start_ore_cli() {
       ore_command="benchmark"
       ;;
     3)
-      ore_command="mine"
+      ore_command="mine --keypair $KEYPAIR_PATH"
       ;;
     4)
       ore_command="rewards"
@@ -201,3 +220,4 @@ while true; do
       ;;
   esac
 done
+
