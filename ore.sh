@@ -34,6 +34,8 @@ install_dependencies() {
 clone_repository() {
   echo -e "${GREEN}Клонирование репозитория...${NC}"
   git clone https://github.com/regolith-labs/ore.git || { echo -e "${RED}Ошибка при клонировании репозитория.${NC}"; exit 1; }
+  echo -e "${GREEN}Содержимое репозитория:${NC}"
+  ls -la ore || { echo -e "${RED}Не удалось отобразить содержимое репозитория.${NC}"; exit 1; }
 }
 
 # Функция для установки зависимостей проекта
@@ -45,6 +47,8 @@ install_project_dependencies() {
       npm install || { echo -e "${RED}Ошибка установки зависимостей проекта.${NC}"; exit 1; }
     else
       echo -e "${RED}Файл package.json не найден. Проверьте содержимое репозитория.${NC}"
+      echo -e "${GREEN}Текущее содержимое директории:${NC}"
+      ls -la
       exit 1
     fi
   else
@@ -144,4 +148,3 @@ while true; do
       ;;
   esac
 done
-
