@@ -34,45 +34,69 @@ install_dependencies() {
 clone_repository() {
   echo -e "${GREEN}Клонирование репозитория...${NC}"
   git clone https://github.com/regolith-labs/ore.git || { echo -e "${RED}Ошибка при клонировании репозитория.${NC}"; exit 1; }
-  cd ore || { echo -e "${RED}Ошибка перехода в директорию репозитория.${NC}"; exit 1; }
 }
 
 # Функция для установки зависимостей проекта
 install_project_dependencies() {
   echo -e "${GREEN}Установка зависимостей проекта...${NC}"
-  npm install || { echo -e "${RED}Ошибка установки зависимостей проекта.${NC}"; exit 1; }
+  if [ -d "ore" ]; then
+    cd ore || { echo -e "${RED}Ошибка перехода в директорию проекта.${NC}"; exit 1; }
+    if [ -f "package.json" ]; then
+      npm install || { echo -e "${RED}Ошибка установки зависимостей проекта.${NC}"; exit 1; }
+    else
+      echo -e "${RED}Файл package.json не найден. Проверьте содержимое репозитория.${NC}"
+      exit 1
+    fi
+  else
+    echo -e "${RED}Директория ore не найдена. Сначала клонируйте репозиторий.${NC}"
+    exit 1
+  fi
 }
 
 # Функция для настройки окружения
 setup_environment() {
   echo -e "${GREEN}Настройка файла окружения...${NC}"
-  if [ -f .env.example ]; then
-    cp .env.example .env
-    echo -e "${GREEN}Файл .env создан. Обновите параметры при необходимости.${NC}"
+  if [ -d "ore" ]; then
+    cd ore || { echo -e "${RED}Ошибка перехода в директорию проекта.${NC}"; exit 1; }
+    if [ -f .env.example ]; then
+      cp .env.example .env
+      echo -e "${GREEN}Файл .env создан. Обновите параметры при необходимости.${NC}"
+    else
+      echo -e "${RED}Файл .env.example не найден.${NC}"
+    fi
   else
-    echo -e "${RED}Файл .env.example не найден.${NC}"
+    echo -e "${RED}Директория ore не найдена. Сначала клонируйте репозиторий.${NC}"
   fi
 }
 
 # Функция для настройки кошелька
 setup_wallet() {
   echo -e "${GREEN}Настройка кошелька...${NC}"
-  read -rp "Введите адрес вашего кошелька: " WALLET_ADDRESS
-  read -rp "Введите ваш приватный ключ: " PRIVATE_KEY
-
-  if [ -f .env ]; then
-    echo "WALLET_ADDRESS=$WALLET_ADDRESS" >> .env
-    echo "PRIVATE_KEY=$PRIVATE_KEY" >> .env
-    echo -e "${GREEN}Кошелек успешно добавлен в файл .env.${NC}"
+  if [ -d "ore" ]; then
+    cd ore || { echo -e "${RED}Ошибка перехода в директорию проекта.${NC}"; exit 1; }
+    if [ -f .env ]; then
+      read -rp "Введите адрес вашего кошелька: " WALLET_ADDRESS
+      read -rp "Введите ваш приватный ключ: " PRIVATE_KEY
+      echo "WALLET_ADDRESS=$WALLET_ADDRESS" >> .env
+      echo "PRIVATE_KEY=$PRIVATE_KEY" >> .env
+      echo -e "${GREEN}Кошелек успешно добавлен в файл .env.${NC}"
+    else
+      echo -e "${RED}Файл .env не найден. Убедитесь, что окружение настроено.${NC}"
+    fi
   else
-    echo -e "${RED}Файл .env не найден. Убедитесь, что окружение настроено.${NC}"
+    echo -e "${RED}Директория ore не найдена. Сначала клонируйте репозиторий.${NC}"
   fi
 }
 
 # Функция для запуска проекта
 start_project() {
   echo -e "${GREEN}Запуск проекта...${NC}"
-  npm start || { echo -e "${RED}Ошибка запуска проекта.${NC}"; exit 1; }
+  if [ -d "ore" ]; then
+    cd ore || { echo -e "${RED}Ошибка перехода в директорию проекта.${NC}"; exit 1; }
+    npm start || { echo -e "${RED}Ошибка запуска проекта.${NC}"; exit 1; }
+  else
+    echo -e "${RED}Директория ore не найдена. Сначала клонируйте репозиторий.${NC}"
+  fi
 }
 
 # Главное меню
@@ -120,3 +144,4 @@ while true; do
       ;;
   esac
 done
+
