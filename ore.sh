@@ -20,12 +20,9 @@ install_dependencies() {
   echo -e "${GREEN}Установка Git...${NC}"
   sudo apt install -y git || { echo -e "${RED}Ошибка установки Git.${NC}"; exit 1; }
 
-  echo -e "${GREEN}Установка Node.js...${NC}"
-  curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash - || { echo -e "${RED}Ошибка настройки репозитория Node.js.${NC}"; exit 1; }
-  sudo apt install -y nodejs || { echo -e "${RED}Ошибка установки Node.js.${NC}"; exit 1; }
-
-  echo -e "${GREEN}Установка curl...${NC}"
-  sudo apt install -y curl || { echo -e "${RED}Ошибка установки curl.${NC}"; exit 1; }
+  echo -e "${GREEN}Установка Rust...${NC}"
+  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y || { echo -e "${RED}Ошибка установки Rust.${NC}"; exit 1; }
+  source "$HOME/.cargo/env"
 
   echo -e "${GREEN}Все зависимости установлены.${NC}"
 }
@@ -43,10 +40,10 @@ install_project_dependencies() {
   echo -e "${GREEN}Установка зависимостей проекта...${NC}"
   if [ -d "ore" ]; then
     cd ore || { echo -e "${RED}Ошибка перехода в директорию проекта.${NC}"; exit 1; }
-    if [ -f "package.json" ]; then
-      npm install || { echo -e "${RED}Ошибка установки зависимостей проекта.${NC}"; exit 1; }
+    if [ -f "Cargo.toml" ]; then
+      cargo build || { echo -e "${RED}Ошибка установки зависимостей проекта.${NC}"; exit 1; }
     else
-      echo -e "${RED}Файл package.json не найден. Проверьте содержимое репозитория.${NC}"
+      echo -e "${RED}Файл Cargo.toml не найден. Проверьте содержимое репозитория.${NC}"
       echo -e "${GREEN}Текущее содержимое директории:${NC}"
       ls -la
       exit 1
@@ -97,7 +94,7 @@ start_project() {
   echo -e "${GREEN}Запуск проекта...${NC}"
   if [ -d "ore" ]; then
     cd ore || { echo -e "${RED}Ошибка перехода в директорию проекта.${NC}"; exit 1; }
-    npm start || { echo -e "${RED}Ошибка запуска проекта.${NC}"; exit 1; }
+    cargo run || { echo -e "${RED}Ошибка запуска проекта.${NC}"; exit 1; }
   else
     echo -e "${RED}Директория ore не найдена. Сначала клонируйте репозиторий.${NC}"
   fi
