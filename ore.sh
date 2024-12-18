@@ -47,7 +47,8 @@ fi
 
 # Установка Solana CLI
 success_message "Устанавливаем Solana CLI..."
-sh -c "$(curl -sSfL https://release.solana.com/stable/install)"
+LATEST_SOLANA_VERSION=$(curl -s https://release.solana.com/stable/version)
+sh -c "$(curl -sSfL https://release.solana.com/${LATEST_SOLANA_VERSION}/install)"
 
 # Проверка Solana CLI
 if command -v solana &> /dev/null; then
