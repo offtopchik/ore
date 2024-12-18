@@ -16,7 +16,8 @@ install_ore_node() {
   # Установка Solana CLI
   if ! command -v solana &> /dev/null; then
     echo "Устанавливается Solana CLI..."
-    curl -sSfL https://release.anza.xyz/v1.15.2/solana-install-init-x86_64-unknown-linux-gnu | sh
+    VERSION="v1.15.2"
+    curl -sSfL https://release.solana.com/$VERSION/solana-install-init-x86_64-unknown-linux-gnu | sh -s -- -y
     export PATH="$HOME/.local/share/solana/install/active_release/bin:$PATH"
   fi
 
@@ -58,7 +59,8 @@ install_ore_node() {
 # Функция установки Solana CLI
 install_solana_cli() {
   echo "Устанавливается Solana CLI..."
-  curl -sSfL https://release.anza.xyz/v1.15.2/solana-install-init-x86_64-unknown-linux-gnu | sh
+  VERSION="v1.15.2"
+  curl -sSfL https://release.solana.com/$VERSION/solana-install-init-x86_64-unknown-linux-gnu | sh -s -- -y
   export PATH="$HOME/.local/share/solana/install/active_release/bin:$PATH"
   if command -v solana &> /dev/null; then
     echo "Solana CLI успешно установлена."
@@ -160,5 +162,8 @@ while true; do
     *)
       echo "Неверный выбор. Попробуйте снова."
       ;;
+  esac
+done
+
   esac
 done
