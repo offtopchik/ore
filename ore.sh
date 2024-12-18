@@ -24,6 +24,9 @@ install_ore_node() {
     . "$HOME/.cargo/env"
   fi
 
+  # Убедиться, что Cargo bin в PATH
+  export PATH="$HOME/.cargo/bin:$PATH"
+
   # Клонирование репозитория и установка через Cargo
   if [ ! -d "ore-cli" ]; then
     git clone https://github.com/regolith-labs/ore-cli.git
@@ -48,6 +51,7 @@ install_ore_node() {
 # Функция запуска ноды ORE
 start_ore_node() {
   echo "Запуск ноды ORE..."
+  export PATH="$HOME/.cargo/bin:$PATH"
   ore stake || echo "Ошибка: Убедитесь, что нода настроена корректно."
 }
 
