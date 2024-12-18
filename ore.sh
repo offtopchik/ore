@@ -13,6 +13,13 @@ install_ore_node() {
   # Установка необходимых пакетов
   sudo apt install -y openssl pkg-config libssl-dev build-essential curl git
 
+  # Установка Solana CLI
+  if ! command -v solana &> /dev/null; then
+    echo "Устанавливается Solana CLI..."
+    sh -c "$(curl -sSfL https://release.solana.com/stable/install)"
+    export PATH="$HOME/.local/share/solana/install/active_release/bin:$PATH"
+  fi
+
   # Установка Rust и Cargo
   if ! command -v cargo &> /dev/null; then
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
@@ -48,12 +55,49 @@ install_ore_node() {
   echo "Установка и настройка ORE завершены!"
 }
 
+# Функция установки Solana CLI
+install_solana_cli() {
+  echo "Устанавливается Solana CLI..."
+  sh -c "$(curl -sSfL https://release.solana.com/stable/install)"
+  export PATH="$HOME/.local/share/solana/install/active_release/bin:$PATH"
+  if command -v solana &> /dev/null; then
+    echo "Solana CLI успешно установлена."
+  else
+    echo "Ошибка при установке Solana CLI."
+    exit 1
+  fi
+}
+
+# Функция создания нового кошелька
+create_new_wallet() {
+  echo "Создаётся новый ключевой файл..."
+  mkdir -p /root/.config/solana
+  solana-keygen new --outfile /root/.config/solana/id.json --no-bip39-passphrase
+  if [ $? -eq 0 ]; then
+    echo "Ключевой файл успешно создан по пути: /root/.config/solana/id.json"
+  else
+    echo "Ошибка при создании ключевого файла. Убедитесь, что Solana CLI установлена."
+    exit 1
+  fi
+}
+
+# Функция импорта существующего кошелька
+import_existing_wallet() {
+  echo "Импорт существующего кошелька..."
+  solana-keygen recover --outfile /root/.config/solana/id.json
+  if [ $? -eq 0 ]; then
+    echo "Кошелёк успешно импортирован."
+  else
+    echo "Ошибка при импорте кошелька. Проверьте ввод."
+    exit 1
+  fi
+}
+
 # Функция запуска ноды ORE
 start_ore_node() {
   echo "Запуск ноды ORE..."
   if [ ! -f "/root/.config/solana/id.json" ]; then
-    echo "Ошибка: Ключевой файл id.json не найден. Создайте его с помощью команды:"
-    echo "  solana-keygen new --outfile /root/.config/solana/id.json"
+    echo "Ошибка: Ключевой файл не найден. Сначала создайте или импортируйте кошелёк."
     return
   fi
 
@@ -85,8 +129,11 @@ while true; do
   echo " Меню установки и управления ORE"
   echo "=============================="
   echo "1. Полная установка ноды ORE"
-  echo "2. Запуск ноды ORE"
-  echo "3. Выход"
+  echo "2. Установка Solana CLI"
+  echo "3. Создание нового кошелька"
+  echo "4. Импорт существующего кошелька"
+  echo "5. Запуск ноды ORE"
+  echo "6. Выход"
   echo "=============================="
   read -p "Выберите действие: " choice
 
@@ -95,9 +142,18 @@ while true; do
       install_ore_node
       ;;
     2)
-      start_ore_node
+      install_solana_cli
       ;;
     3)
+      create_new_wallet
+      ;;
+    4)
+      import_existing_wallet
+      ;;
+    5)
+      start_ore_node
+      ;;
+    6)
       echo "Выход из меню."
       exit 0
       ;;
@@ -106,4 +162,3 @@ while true; do
       ;;
   esac
 done
-
