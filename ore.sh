@@ -9,6 +9,11 @@ YELLOW='\033[0;33m'
 CYAN='\033[0;36m'
 NC='\033[0m' # Нет цвета
 
+# ====================
+# Глобальные переменные
+# ====================
+PROJECT_DIR="$HOME/ore" # Укажите полный путь к проекту
+
 # ============================
 # Функция для обновления системы, установки зависимостей и клонирования репозитория
 # ============================
@@ -32,8 +37,8 @@ update_install_and_clone() {
   echo -e "\n${CYAN}==============================${NC}"
   echo -e "${GREEN}4. Клонирование репозитория...${NC}"
   echo -e "${CYAN}==============================${NC}"
-  if [ ! -d "ore" ]; then
-    git clone https://github.com/regolith-labs/ore.git || { echo -e "${RED}Ошибка при клонировании репозитория.${NC}"; exit 1; }
+  if [ ! -d "$PROJECT_DIR" ]; then
+    git clone https://github.com/regolith-labs/ore.git "$PROJECT_DIR" || { echo -e "${RED}Ошибка при клонировании репозитория.${NC}"; exit 1; }
   else
     echo -e "${YELLOW}Репозиторий уже клонирован.${NC}"
   fi
@@ -41,8 +46,8 @@ update_install_and_clone() {
   echo -e "\n${CYAN}==============================${NC}"
   echo -e "${GREEN}5. Установка зависимостей проекта...${NC}"
   echo -e "${CYAN}==============================${NC}"
-  if [ -d "ore" ]; then
-    cd ore || { echo -e "${RED}Ошибка перехода в директорию проекта.${NC}"; exit 1; }
+  if [ -d "$PROJECT_DIR" ]; then
+    cd "$PROJECT_DIR" || { echo -e "${RED}Ошибка перехода в директорию проекта.${NC}"; exit 1; }
     if [ -f "Cargo.toml" ]; then
       cargo build || { echo -e "${RED}Ошибка установки зависимостей проекта.${NC}"; exit 1; }
     else
@@ -52,7 +57,7 @@ update_install_and_clone() {
       exit 1
     fi
   else
-    echo -e "${RED}Директория ore не найдена. Сначала клонируйте репозиторий.${NC}"
+    echo -e "${RED}Директория $PROJECT_DIR не найдена. Сначала клонируйте репозиторий.${NC}"
     exit 1
   fi
 }
@@ -61,15 +66,15 @@ update_install_and_clone() {
 # Функция для настройки окружения
 # ============================
 setup_environment() {
-  if [ ! -d "ore" ]; then
-    echo -e "${YELLOW}Директория ore не найдена. Выполняется установка ноды ORE...${NC}"
+  if [ ! -d "$PROJECT_DIR" ]; then
+    echo -e "${YELLOW}Директория $PROJECT_DIR не найдена. Выполняется установка ноды ORE...${NC}"
     update_install_and_clone
   fi
 
   echo -e "\n${CYAN}==============================${NC}"
   echo -e "${GREEN}Настройка файла окружения...${NC}"
   echo -e "${CYAN}==============================${NC}"
-  cd ore || { echo -e "${RED}Ошибка перехода в директорию проекта.${NC}"; exit 1; }
+  cd "$PROJECT_DIR" || { echo -e "${RED}Ошибка перехода в директорию проекта.${NC}"; exit 1; }
   if [ -f .env.example ]; then
     cp .env.example .env
     echo -e "${GREEN}Файл .env создан. Обновите параметры при необходимости.${NC}"
@@ -82,15 +87,15 @@ setup_environment() {
 # Функция для настройки кошелька
 # ============================
 setup_wallet() {
-  if [ ! -d "ore" ]; then
-    echo -e "${YELLOW}Директория ore не найдена. Выполняется установка ноды ORE...${NC}"
+  if [ ! -d "$PROJECT_DIR" ]; then
+    echo -e "${YELLOW}Директория $PROJECT_DIR не найдена. Выполняется установка ноды ORE...${NC}"
     update_install_and_clone
   fi
 
   echo -e "\n${CYAN}==============================${NC}"
   echo -e "${GREEN}Настройка кошелька...${NC}"
   echo -e "${CYAN}==============================${NC}"
-  cd ore || { echo -e "${RED}Ошибка перехода в директорию проекта.${NC}"; exit 1; }
+  cd "$PROJECT_DIR" || { echo -e "${RED}Ошибка перехода в директорию проекта.${NC}"; exit 1; }
   if [ -f .env ]; then
     read -rp "Введите адрес вашего кошелька: " WALLET_ADDRESS
     read -rp "Введите ваш приватный ключ: " PRIVATE_KEY
@@ -106,15 +111,15 @@ setup_wallet() {
 # Функция для запуска проекта
 # ============================
 start_project() {
-  if [ ! -d "ore" ]; then
-    echo -e "${YELLOW}Директория ore не найдена. Выполняется установка ноды ORE...${NC}"
+  if [ ! -d "$PROJECT_DIR" ]; then
+    echo -e "${YELLOW}Директория $PROJECT_DIR не найдена. Выполняется установка ноды ORE...${NC}"
     update_install_and_clone
   fi
 
   echo -e "\n${CYAN}==============================${NC}"
   echo -e "${GREEN}Запуск проекта...${NC}"
   echo -e "${CYAN}==============================${NC}"
-  cd ore || { echo -e "${RED}Ошибка перехода в директорию проекта.${NC}"; exit 1; }
+  cd "$PROJECT_DIR" || { echo -e "${RED}Ошибка перехода в директорию проекта.${NC}"; exit 1; }
   cargo run || { echo -e "${RED}Ошибка запуска проекта.${NC}"; exit 1; }
 }
 
