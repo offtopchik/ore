@@ -12,146 +12,176 @@ NC='\033[0m' # Нет цвета
 # ====================
 # Глобальные переменные
 # ====================
-PROJECT_DIR="$HOME/ore" # Укажите полный путь к проекту
+ORE_NODE_DIR="$HOME/ore-node" # Укажите полный путь к ore-node
+ORE_CLI_DIR="$HOME/ore-cli"   # Укажите полный путь к ore-cli
 
-# ============================
-# Функция для обновления системы, установки зависимостей и клонирования репозитория
-# ============================
-update_install_and_clone() {
+# ==========================
+# Функция для установки ноды ORE
+# ==========================
+install_ore_node() {
   echo -e "\n${CYAN}==============================${NC}"
-  echo -e "${GREEN}1. Обновление системы...${NC}"
+  echo -e "${GREEN}1. Установка ноды ORE...${NC}"
   echo -e "${CYAN}==============================${NC}"
-  sudo apt update && sudo apt upgrade -y || { echo -e "${RED}Ошибка обновления системы.${NC}"; exit 1; }
 
-  echo -e "\n${CYAN}==============================${NC}"
-  echo -e "${GREEN}2. Установка необходимых утилит...${NC}"
-  echo -e "${CYAN}==============================${NC}"
-  sudo apt install -y git build-essential || { echo -e "${RED}Ошибка установки утилит.${NC}"; exit 1; }
-
-  echo -e "\n${CYAN}==============================${NC}"
-  echo -e "${GREEN}3. Установка Rust...${NC}"
-  echo -e "${CYAN}==============================${NC}"
-  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y || { echo -e "${RED}Ошибка установки Rust.${NC}"; exit 1; }
-  source "$HOME/.cargo/env"
-
-  echo -e "\n${CYAN}==============================${NC}"
-  echo -e "${GREEN}4. Клонирование репозитория...${NC}"
-  echo -e "${CYAN}==============================${NC}"
-  if [ ! -d "$PROJECT_DIR" ]; then
-    git clone https://github.com/regolith-labs/ore.git "$PROJECT_DIR" || { echo -e "${RED}Ошибка при клонировании репозитория.${NC}"; exit 1; }
-  else
-    echo -e "${YELLOW}Репозиторий уже клонирован.${NC}"
-  fi
-
-  echo -e "\n${CYAN}==============================${NC}"
-  echo -e "${GREEN}5. Установка зависимостей проекта...${NC}"
-  echo -e "${CYAN}==============================${NC}"
-  if [ -d "$PROJECT_DIR" ]; then
-    cd "$PROJECT_DIR" || { echo -e "${RED}Ошибка перехода в директорию проекта.${NC}"; exit 1; }
-    if [ -f "Cargo.toml" ]; then
-      cargo build || { echo -e "${RED}Ошибка установки зависимостей проекта.${NC}"; exit 1; }
-    else
-      echo -e "${RED}Файл Cargo.toml не найден. Проверьте содержимое репозитория.${NC}"
-      echo -e "${YELLOW}Текущее содержимое директории:${NC}"
-      ls -la
-      exit 1
-    fi
-  else
-    echo -e "${RED}Директория $PROJECT_DIR не найдена. Сначала клонируйте репозиторий.${NC}"
+  sudo apt update && sudo apt upgrade -y && sudo apt install -y git build-essential curl || {
+    echo -e "${RED}Ошибка установки зависимостей.${NC}"
     exit 1
+  }
+
+  if [ ! -d "$ORE_NODE_DIR" ]; then
+    git clone https://github.com/regolith-labs/ore.git "$ORE_NODE_DIR" || {
+      echo -e "${RED}Ошибка клонирования репозитория ноды.${NC}"
+      exit 1
+    }
+  else
+    echo -e "${YELLOW}Репозиторий ноды уже клонирован.${NC}"
   fi
+
+  cd "$ORE_NODE_DIR" || {
+    echo -e "${RED}Ошибка перехода в директорию ноды.${NC}"
+    exit 1
+  }
+
+  cargo build --release || {
+    echo -e "${RED}Ошибка сборки ноды.${NC}"
+    exit 1
+  }
+
+  echo -e "${GREEN}Нода ORE успешно установлена.${NC}"
 }
 
-# ============================
-# Функция для настройки окружения
-# ============================
-setup_environment() {
-  if [ ! -d "$PROJECT_DIR" ]; then
-    echo -e "${YELLOW}Директория $PROJECT_DIR не найдена. Выполняется установка ноды ORE...${NC}"
-    update_install_and_clone
+# ==========================
+# Функция для запуска ноды ORE
+# ==========================
+start_ore_node() {
+  if [ ! -d "$ORE_NODE_DIR" ]; then
+    echo -e "${YELLOW}Нода ORE не найдена. Выполняется установка...${NC}"
+    install_ore_node
   fi
 
   echo -e "\n${CYAN}==============================${NC}"
-  echo -e "${GREEN}Настройка файла окружения...${NC}"
+  echo -e "${GREEN}Запуск ноды ORE...${NC}"
   echo -e "${CYAN}==============================${NC}"
-  cd "$PROJECT_DIR" || { echo -e "${RED}Ошибка перехода в директорию проекта.${NC}"; exit 1; }
-  if [ -f .env.example ]; then
-    cp .env.example .env
-    echo -e "${GREEN}Файл .env создан. Обновите параметры при необходимости.${NC}"
-  else
-    echo -e "${RED}Файл .env.example не найден.${NC}"
-  fi
+
+  cd "$ORE_NODE_DIR" || {
+    echo -e "${RED}Ошибка перехода в директорию ноды.${NC}"
+    exit 1
+  }
+
+  cargo run --release || {
+    echo -e "${RED}Ошибка запуска ноды.${NC}"
+    exit 1
+  }
 }
 
-# ============================
-# Функция для настройки кошелька
-# ============================
+# ==========================
+# Функция для установки ore-cli
+# ==========================
+install_ore_cli() {
+  echo -e "\n${CYAN}==============================${NC}"
+  echo -e "${GREEN}1. Установка ore-cli...${NC}"
+  echo -e "${CYAN}==============================${NC}"
+
+  if [ ! -d "$ORE_CLI_DIR" ]; then
+    git clone https://github.com/regolith-labs/ore-cli.git "$ORE_CLI_DIR" || {
+      echo -e "${RED}Ошибка клонирования ore-cli.${NC}"
+      exit 1
+    }
+  else
+    echo -e "${YELLOW}ore-cli уже клонирован.${NC}"
+  fi
+
+  cd "$ORE_CLI_DIR" || {
+    echo -e "${RED}Ошибка перехода в директорию ore-cli.${NC}"
+    exit 1
+  }
+
+  cargo build --release || {
+    echo -e "${RED}Ошибка сборки ore-cli.${NC}"
+    exit 1
+  }
+
+  echo -e "${GREEN}ore-cli успешно установлен.${NC}"
+}
+
+# ==========================
+# Функция для настройки кошелька с помощью ore-cli
+# ==========================
 setup_wallet() {
-  if [ ! -d "$PROJECT_DIR" ]; then
-    echo -e "${YELLOW}Директория $PROJECT_DIR не найдена. Выполняется установка ноды ORE...${NC}"
-    update_install_and_clone
+  if [ ! -d "$ORE_CLI_DIR" ]; then
+    echo -e "${YELLOW}ore-cli не найден. Выполняется установка...${NC}"
+    install_ore_cli
   fi
 
   echo -e "\n${CYAN}==============================${NC}"
   echo -e "${GREEN}Настройка кошелька...${NC}"
   echo -e "${CYAN}==============================${NC}"
-  cd "$PROJECT_DIR" || { echo -e "${RED}Ошибка перехода в директорию проекта.${NC}"; exit 1; }
-  if [ -f .env ]; then
-    read -rp "Введите адрес вашего кошелька: " WALLET_ADDRESS
-    read -rp "Введите ваш приватный ключ: " PRIVATE_KEY
-    echo "WALLET_ADDRESS=$WALLET_ADDRESS" >> .env
-    echo "PRIVATE_KEY=$PRIVATE_KEY" >> .env
-    echo -e "${GREEN}Кошелек успешно добавлен в файл .env.${NC}"
-  else
-    echo -e "${RED}Файл .env не найден. Убедитесь, что окружение настроено.${NC}"
-  fi
+
+  read -rp "Введите адрес вашего кошелька: " WALLET_ADDRESS
+  read -rp "Введите ваш приватный ключ: " PRIVATE_KEY
+
+  "$ORE_CLI_DIR/target/release/ore-cli" wallet add \
+    --address "$WALLET_ADDRESS" \
+    --private-key "$PRIVATE_KEY" || {
+    echo -e "${RED}Ошибка добавления кошелька.${NC}"
+    exit 1
+  }
+
+  echo -e "${GREEN}Кошелек успешно добавлен.${NC}"
 }
 
-# ============================
-# Функция для запуска проекта
-# ============================
-start_project() {
-  if [ ! -d "$PROJECT_DIR" ]; then
-    echo -e "${YELLOW}Директория $PROJECT_DIR не найдена. Выполняется установка ноды ORE...${NC}"
-    update_install_and_clone
+# ==========================
+# Функция для запуска ore-cli
+# ==========================
+start_ore_cli() {
+  if [ ! -d "$ORE_CLI_DIR" ]; then
+    echo -e "${YELLOW}ore-cli не найден. Выполняется установка...${NC}"
+    install_ore_cli
   fi
 
   echo -e "\n${CYAN}==============================${NC}"
-  echo -e "${GREEN}Запуск проекта...${NC}"
+  echo -e "${GREEN}Запуск ore-cli...${NC}"
   echo -e "${CYAN}==============================${NC}"
-  cd "$PROJECT_DIR" || { echo -e "${RED}Ошибка перехода в директорию проекта.${NC}"; exit 1; }
-  cargo run || { echo -e "${RED}Ошибка запуска проекта.${NC}"; exit 1; }
+
+  "$ORE_CLI_DIR/target/release/ore-cli" || {
+    echo -e "${RED}Ошибка запуска ore-cli.${NC}"
+    exit 1
+  }
 }
 
-# ============================
+# ==========================
 # Главное меню
-# ============================
+# ==========================
 while true; do
   echo -e "\n${CYAN}==============================${NC}"
   echo -e "${GREEN}Выберите действие:${NC}"
   echo -e "${CYAN}==============================${NC}"
-  echo "1) Установка ноды ORE"
-  echo "2) Настроить окружение"
-  echo "3) Настроить кошелек"
-  echo "4) Запустить проект"
-  echo "5) Выход"
+  echo "1) Установить ноду ORE"
+  echo "2) Запустить ноду ORE"
+  echo "3) Установить ore-cli"
+  echo "4) Настроить кошелек"
+  echo "5) Запустить ore-cli"
+  echo "6) Выход"
 
   read -rp "Введите номер действия: " choice
 
   case $choice in
     1)
-      update_install_and_clone
+      install_ore_node
       ;;
     2)
-      setup_environment
+      start_ore_node
       ;;
     3)
-      setup_wallet
+      install_ore_cli
       ;;
     4)
-      start_project
+      setup_wallet
       ;;
     5)
+      start_ore_cli
+      ;;
+    6)
       echo -e "${GREEN}Выход из программы.${NC}"
       exit 0
       ;;
