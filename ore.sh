@@ -43,7 +43,7 @@ install_ore_node() {
   fi
 
   # Проверка установки
-  ore --version || echo "Ошибка: Убедитесь, что ore-cli установлен правильно."
+  /root/.cargo/bin/ore --version || echo "Ошибка: Убедитесь, что ore-cli установлен правильно."
 
   echo "Установка и настройка ORE завершены!"
 }
@@ -51,8 +51,11 @@ install_ore_node() {
 # Функция запуска ноды ORE
 start_ore_node() {
   echo "Запуск ноды ORE..."
-  export PATH="$HOME/.cargo/bin:$PATH"
-  ore stake || echo "Ошибка: Убедитесь, что нода настроена корректно."
+  if [ -f "/root/.cargo/bin/ore" ]; then
+    "/root/.cargo/bin/ore" stake || echo "Ошибка: Убедитесь, что нода настроена корректно."
+  else
+    echo "Ошибка: Команда ore не найдена. Проверьте установку."
+  fi
 }
 
 # Меню выбора действий
@@ -82,3 +85,4 @@ while true; do
       ;;
   esac
 done
+
