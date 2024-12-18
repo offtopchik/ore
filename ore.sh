@@ -47,9 +47,15 @@ fi
 
 # Установка Solana CLI
 success_message "Устанавливаем Solana CLI..."
-success_message "Переходим на использование нового метода установки..."
-LATEST_SOLANA_CHANNEL="stable"  # Укажите необходимый канал: stable, beta, edge
-sh -c "$(curl -sSfL https://release.anza.xyz/${LATEST_SOLANA_CHANNEL}/install)"
+success_message "Получаем последнюю версию Solana CLI..."
+LATEST_SOLANA_VERSION=$(curl -sSfL https://release.anza.xyz/stable/version)
+if [ -z "$LATEST_SOLANA_VERSION" ]; then
+    echo "Ошибка: не удалось получить последнюю версию Solana CLI. Проверьте соединение или URL."
+    exit 1
+fi
+
+success_message "Устанавливаем версию $LATEST_SOLANA_VERSION..."
+sh -c "$(curl -sSfL https://release.anza.xyz/$LATEST_SOLANA_VERSION/install)"
 
 # Проверка Solana CLI
 if command -v solana &> /dev/null; then
