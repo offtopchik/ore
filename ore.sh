@@ -54,10 +54,18 @@ start_ore_node() {
   if [ -f "/root/.cargo/bin/ore" ]; then
     while true; do
       read -p "Введите адрес MINT (MINT_ADDRESS): " MINT_ADDRESS
+      MINT_ADDRESS=$(echo "$MINT_ADDRESS" | xargs)  # Удаление лишних пробелов
       if [ -z "$MINT_ADDRESS" ]; then
         echo "Ошибка: MINT_ADDRESS не может быть пустым. Пожалуйста, введите корректный адрес."
       else
-        "/root/.cargo/bin/ore" stake "$MINT_ADDRESS" && break || echo "Ошибка: Убедитесь, что адрес корректен и нода настроена. Попробуйте снова."
+        echo "Используется адрес MINT: $MINT_ADDRESS"
+        "/root/.cargo/bin/ore" stake "$MINT_ADDRESS"
+        if [ $? -eq 0 ]; then
+          echo "Нода успешно запущена."
+          break
+        else
+          echo "Ошибка: Убедитесь, что адрес корректен и нода настроена. Попробуйте снова."
+        fi
       fi
     done
   else
