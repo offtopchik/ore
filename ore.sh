@@ -53,18 +53,6 @@ check_and_install_rust() {
     echo -e "${GREEN}Rust уже установлен.${NC}"
   fi
 }
-
-# ==========================
-# Проверка наличия ключевого файла
-# ==========================
-check_keypair() {
-  if [ ! -f "$KEYPAIR_PATH" ]; then
-    echo -e "${YELLOW}Ключевой файл не найден. Создание нового ключа...${NC}"
-    mkdir -p "$(dirname "$KEYPAIR_PATH")"
-    solana-keygen new --outfile "$KEYPAIR_PATH" || {
-      echo -e "${RED}Ошибка создания ключевого файла.${NC}"
-      exit 1
-    }
     echo -e "${GREEN}Ключ успешно создан и сохранен по пути: $KEYPAIR_PATH${NC}"
   else
     echo -e "${GREEN}Ключевой файл найден: $KEYPAIR_PATH${NC}"
@@ -124,8 +112,7 @@ install_ore_cli() {
 # ==========================
 start_ore_cli() {
   find_executable
-  check_keypair
-
+  
   echo -e "\n${CYAN}==============================${NC}"
   echo -e "${GREEN}Выберите команду для выполнения:${NC}"
   echo -e "${CYAN}==============================${NC}"
