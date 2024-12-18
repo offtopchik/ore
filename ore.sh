@@ -11,7 +11,7 @@ install_ore_node() {
   sudo apt update && sudo apt upgrade -y
 
   # Установка необходимых пакетов
-  sudo apt install -y openssl pkg-config libssl-dev build-essential curl
+  sudo apt install -y openssl pkg-config libssl-dev build-essential curl git
 
   # Установка Rust и Cargo
   if ! command -v cargo &> /dev/null; then
@@ -19,15 +19,20 @@ install_ore_node() {
     source "$HOME/.cargo/env"
   fi
 
+  # Обновление переменной PATH для текущей сессии
+  if [ -f "$HOME/.cargo/env" ]; then
+    . "$HOME/.cargo/env"
+  fi
+
   # Клонирование репозитория
   if [ ! -d "ore-cli" ]; then
-    sudo git clone https://github.com/regolith-labs/ore-cli.git
+    git clone https://github.com/regolith-labs/ore-cli.git
   fi
 
   cd ore-cli
 
   # Обновление репозитория
-  sudo git pull origin main
+  git pull origin main
 
   # Установка зависимостей через Cargo
   cargo install --path .
