@@ -28,6 +28,11 @@ else
     success_message "Rust уже установлен. Пропускаем."
 fi
 
+# Установка дополнительных библиотек для Rust и Solana
+success_message "Устанавливаем дополнительные зависимости..."
+sudo apt install -y build-essential clang libudev-dev pkg-config libhidapi-dev librust-openssl-sys-dev librocksdb-dev
+sudo apt install -y libssl-dev libudev-dev pkg-config zlib1g-dev llvm clang
+
 # Установка Node.js (LTS)
 success_message "Устанавливаем Node.js..."
 if ! command -v node &> /dev/null; then
@@ -59,6 +64,10 @@ else
     echo "Ошибка: Solana CLI не установлена. Проверьте ошибки."
     exit 1
 fi
+
+# Установка Solana Foundation Delegation Program CLI
+success_message "Устанавливаем Solana Foundation Delegation Program CLI..."
+cargo install solana-foundation-delegation-program-cli
 
 # Настройка RPC (mainnet-beta)
 success_message "Настраиваем RPC для mainnet-beta..."
